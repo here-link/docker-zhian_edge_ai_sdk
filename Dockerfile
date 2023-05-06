@@ -8,6 +8,3 @@ COPY doorapiserver.py /workspace/apiservice/doorapiserver.py
 
 # Add the cron job
 RUN crontab -l | { cat; echo "1 0 * * * /bin/bash /workspace/apiservice/auto-del-3-days-ago-image.sh"; } | crontab -
-
-RUN chmod 0644 /workspace/run.sh
-RUN ls -l /workspace
