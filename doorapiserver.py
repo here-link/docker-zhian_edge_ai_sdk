@@ -11,6 +11,7 @@ from flask import jsonify
 from gevent import pywsgi
 import requests
 import time
+import threading
 
 # 获取所有配置参数
 app = Flask(__name__)
@@ -19,6 +20,8 @@ app.config['JSON_AS_ASCII'] = False  #防止中文乱码
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
 dir_name='/workspace/apiservice/imagedata'
+# 定义一个全局锁
+lock = threading.Lock()
 
 def get_image_data(url):
     if not os.path.exists(dir_name):
@@ -90,7 +93,8 @@ def predict():
             # call api
             command ='/workspace/doorlock -i ' + filepath + ' -o fixed'
             #print(command)
-            result = os.system(command)
+            with lock:
+                result = os.system(command)
             #print(result)
 
 	    # check file bin

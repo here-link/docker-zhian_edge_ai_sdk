@@ -1,4 +1,4 @@
-FROM faceedge01/zhian_edge_ai_sdk:bp3V104
+FROM faceedge01/zhian_edge_ai_sdk:bp3V203
 MAINTAINER here.link
 
 # Add the script to the Docker Image
