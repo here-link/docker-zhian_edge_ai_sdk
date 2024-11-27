@@ -12,6 +12,7 @@ from gevent import pywsgi
 import requests
 import time
 import threading
+import re
 
 # 获取所有配置参数
 app = Flask(__name__)
@@ -65,7 +66,29 @@ def predict():
     # 获取输入数据
     #file = request.files['image']
     #filepath = request.args['image']
+    ver =''
     url = request.args['image']
+    ver = request.args['version']
+    #print(ver)
+    options = {'BH124' : 1, 'BH125': 2, 'GH226' : 3, 'BH226' : 4, 'BH322' : 5, 'BH333' : 6, 'BH334' : 7, 'BH335' :8, 'BH338' : 9, 'BH341' : 10, 'BH336' : 11, 'v2' : 12, 'V2' : 13}
+    options1 = {'BH262' : 1, 'BH263': 2, 'BH413' : 3, 'BH414' : 4, 'BH415' : 5, 'BH416' : 6, 'BH417' : 7, 'BH418' :8, 'BH419' : 9, 'BH421' : 10, 'BH422' : 11, 'v3' : 12, 'V3' : 13}
+    if ver in options:
+        ver = 'v2'
+    #elif ver == 'v3' or ver == 'BH262' or ver == 'BH263' or ver == 'BH413'or ver == 'BH414' or ver == 'BH415':
+    elif ver in options1:
+        ver = 'v3'
+    else:
+        te = re.findall('BH4', ver)
+        te2 = re.findall('BH26', ver)
+        if te:
+            ver = 'v3'
+        elif te2:
+            ver = 'v3'
+        else:
+            ver = ''
+
+    #if ver == 'v2' or ver == '' or ver == 'BH124'
+    # print('ver=%s' % ver)
     #find path tag
     httptag = url.find('http', 0, 4)
     #print(url.find('http', 0, 4))
@@ -74,9 +97,9 @@ def predict():
     #print(url)
     #download image
     if httptag ==0:
-       filepath = get_image_data(url)
+        filepath = get_image_data(url)
     else:
-       filepath = url
+        filepath = url
     #print(filepath)
     emsg='success'
     binhex =''
@@ -91,7 +114,15 @@ def predict():
             binhex = read_data_from_binary_file(binfile)
         else:
             # call api
-            command ='/workspace/doorlock -i ' + filepath + ' -o fixed'
+            if not ver:
+                #print('not ver')
+                command ='/workspace/doorlock -i ' + filepath + ' -o fixed'
+                #command ='/workspace/doorlock -i ' + filepath + ' -P ' + ver + ' -o fixed'
+            else:
+                print('ver:%s' % ver)
+                command ='/workspace/doorlock -i ' + filepath + ' -P ' + ver + ' -o fixed'
+                #command ='/workspace/doorlock -i ' + filepath + ' -o fixed'
+
             #print(command)
             with lock:
                 result = os.system(command)
