@@ -10,7 +10,7 @@ set -euo pipefail
 ARCHIVE_PATH="${ARCHIVE_PATH:-BE3V120.tar}"
 OWNER="${OWNER:-here-link}"
 BASE_LOCAL="${BASE_LOCAL:-faceedge01/zhian_edge_ai_sdk:BE3V120}"
-BASE_REMOTE="${BASE_REMOTE:-ghcr.io/${OWNER}/zhian_edge_ai_sdk-base:BE3V120}"
+BASE_REMOTE="${BASE_REMOTE:-ghcr.io/${OWNER}/docker-zhian_edge_ai_sdk:base-BE3V120}"
 IMAGE_REMOTE="${IMAGE_REMOTE:-ghcr.io/${OWNER}/docker-zhian_edge_ai_sdk:be3v120}"
 PUSH_LATEST="${PUSH_LATEST:-1}"
 

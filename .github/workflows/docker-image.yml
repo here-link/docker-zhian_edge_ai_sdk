@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  DEFAULT_BASE_IMAGE: ghcr.io/${{ github.repository_owner }}/zhian_edge_ai_sdk-base:BE3V120
+  DEFAULT_BASE_IMAGE: ghcr.io/${{ github.repository }}:base-BE3V120
 
 jobs:
   test:

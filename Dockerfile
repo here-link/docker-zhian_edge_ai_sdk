@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+ARG BASE_IMAGE=ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120
 FROM ${BASE_IMAGE}
 
 LABEL maintainer="here.link" \

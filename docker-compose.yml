@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120}
+        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120}
     image: ${IMAGE_NAME:-ghcr.io/here-link/docker-zhian_edge_ai_sdk:be3v120}
     ports:
       - "5000:8008"

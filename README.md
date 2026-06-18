@@ -34,13 +34,13 @@ faceedge01/zhian_edge_ai_sdk:BE3V120
 本仓库的 `Dockerfile` 默认从已经上传到 GHCR 的原版 BE3V120 base 镜像构建：
 
 ```text
-ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120
 ```
 
 确认 base 镜像可拉取：
 
 ```bash
-docker pull ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+docker pull ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120
 ```
 
 构建优化镜像：
@@ -125,15 +125,15 @@ echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 ```bash
 docker tag \
   faceedge01/zhian_edge_ai_sdk:BE3V120 \
-  ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+  ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120
 
-docker push ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+docker push ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120
 
 # 同时推一个小写 tag，方便人工输入/检索
 docker tag \
   faceedge01/zhian_edge_ai_sdk:BE3V120 \
-  ghcr.io/here-link/zhian_edge_ai_sdk-base:be3v120
-docker push ghcr.io/here-link/zhian_edge_ai_sdk-base:be3v120
+  ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-be3v120
+docker push ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-be3v120
 ```
 
 如果这个 package 是私有的，需要在 GitHub Package 设置里把 `here-link/docker-zhian_edge_ai_sdk` 仓库加入访问权限，否则 Actions 的 `GITHUB_TOKEN` 拉不到 base 镜像。
@@ -172,5 +172,5 @@ ghcr.io/here-link/docker-zhian_edge_ai_sdk:latest
 ## 注意事项
 
 - `BE3V120.tar` 是大文件且可能包含指安授权内容，不应提交到 Git；本仓库已在 `.gitignore` 和 `.dockerignore` 忽略 `*.tar`。
-- GitHub Actions 依赖 `ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120`。如果只在本机有 `BE3V120.tar`，Actions 构建会失败。
+- GitHub Actions 依赖 `ghcr.io/here-link/docker-zhian_edge_ai_sdk:base-BE3V120`。如果只在本机有 `BE3V120.tar`，Actions 构建会失败。
 - 当前镜像是 `linux/amd64`。在 Apple Silicon 本机运行时需要 Docker/QEMU 仿真，因此 compose 和示例命令都指定了 `linux/amd64`。
