@@ -25,7 +25,7 @@ faceedge01/zhian_edge_ai_sdk:BE3V120
 保留/优化点：
 
 - API 错误码：使用 BE3V120 自带的 `FAIL_CODE_MAP` 和日志解析。
-- 临时文件清理：使用 BE3V120 自带的请求前/请求后清理逻辑。
+- 临时文件清理：保留 BE3V120 自带的请求前/请求后清理逻辑，并补回旧镜像的 `/workspace/apiservice/auto-del-3-days-ago-image.sh` 自动清理脚本；默认清理 `/data1`、`/workspace/tmp`、`/workspace/apiservice/imagedata` 中超过 3 天的图片/特征/日志临时文件。
 - Docker 日志：`gunicorn` access/error log 输出到 stdout/stderr。
 - 启动优化：不再每次容器启动时 `pip install`，直接使用镜像内已安装的 `gunicorn/gevent`。
 
@@ -69,6 +69,26 @@ docker build \
   -t ghcr.io/here-link/docker-zhian_edge_ai_sdk:be3v120 \
   .
 ```
+
+## 自动清理脚本
+
+镜像内包含兼容旧路径的清理脚本：
+
+```text
+/workspace/apiservice/auto-del-3-days-ago-image.sh
+```
+
+`run.sh` 会在启动 gunicorn 前拉起一个后台清理循环，默认立即执行一次，然后每 86400 秒执行一次。可用环境变量：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `ENABLE_IMAGE_CLEANUP` | `1` | 设为 `0` 可禁用后台清理循环 |
+| `IMAGE_RETENTION_DAYS` | `3` | 删除超过多少天的临时文件 |
+| `IMAGE_CLEANUP_INTERVAL_SECONDS` | `86400` | 后台清理循环间隔 |
+| `IMAGE_CLEANUP_PATHS` | `/data1 /workspace/tmp /workspace/apiservice/imagedata` | 要清理的目录列表 |
+| `IMAGE_CLEANUP_EXCLUDE_NAMES` | `guo_fu_cheng.jpg li_ming.jpg liu_de_hua.jpg zhang_xue_you.jpg` | 保留 vendor 内置样例图，避免清理后 README 示例不可用 |
+
+脚本只删除图片、`.bin` 特征、日志和临时文本类文件，不会删除目录内其它任意文件。
 
 ## 本地验证
 

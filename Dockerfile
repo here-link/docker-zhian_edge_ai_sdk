@@ -13,9 +13,10 @@ WORKDIR /workspace
 # support from the new vendor image will be overwritten.
 COPY run.sh /workspace/run.sh
 COPY api_app.py /workspace/api_app.py
+COPY auto-del-3-days-ago-image.sh /workspace/apiservice/auto-del-3-days-ago-image.sh
 
 RUN test -f /workspace/doorlock_api.py \
-    && chmod +x /workspace/run.sh \
+    && chmod +x /workspace/run.sh /workspace/apiservice/auto-del-3-days-ago-image.sh \
     && mkdir -p /workspace/tmp
 
 EXPOSE 8008
