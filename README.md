@@ -26,6 +26,8 @@ faceedge01/zhian_edge_ai_sdk:BE3V120
 
 - API 错误码：使用 BE3V120 自带的 `FAIL_CODE_MAP` 和日志解析。
 - 临时文件清理：保留 BE3V120 自带的请求前/请求后清理逻辑，并补回旧镜像的 `/workspace/apiservice/auto-del-3-days-ago-image.sh` 自动清理脚本；默认清理 `/data1`、`/workspace/tmp`、`/workspace/apiservice/imagedata` 中超过 3 天的图片/特征/日志临时文件。
+- 并发安全：`api_app.py` 只包装 vendor API，不覆盖算法入口；每个请求使用唯一临时图片/特征文件名，并禁用 vendor 的请求级全局清理，避免并发请求互删 `/data1` 文件。
+- 子进程队列：默认 `FEATURE_PROCESS_CONCURRENCY=1`，用跨 gunicorn worker 的文件锁串行执行特征提取子进程；如现场压测确认算法二进制并发稳定，可显式调大。
 - Docker 日志：`gunicorn` access/error log 输出到 stdout/stderr。
 - 启动优化：不再每次容器启动时 `pip install`，直接使用镜像内已安装的 `gunicorn/gevent`。
 
@@ -69,6 +71,26 @@ docker build \
   -t ghcr.io/here-link/docker-zhian_edge_ai_sdk:be3v120 \
   .
 ```
+
+## 并发和子进程队列
+
+新版 vendor `doorlock_api.py` 的原始实现不适合直接开 4 个 gunicorn worker 并发处理同一批 `/data1` 文件：它会在请求开始时删除除当前图片外的图片/特征文件，并且输出特征文件名由图片名决定，多个 worker 同时处理同名图片时会互相覆盖。
+
+本镜像在 `api_app.py` 中做最小包装：
+
+1. 本地图片请求会先复制成每个请求唯一的临时文件名；远程下载也使用唯一文件名。
+2. 请求完成后只删除本请求前缀的临时图片和特征文件，不再执行 vendor 的请求级全局清理。
+3. `auto-del-3-days-ago-image.sh` 继续作为按时间的兜底清理。
+4. 特征提取子进程默认通过跨 worker 文件锁排队执行。
+
+相关环境变量：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `FEATURE_PROCESS_CONCURRENCY` | `1` | 同一容器内允许同时运行多少个特征提取子进程；`1` 表示排队串行，`2/4` 表示允许并发，`0`/`unlimited` 表示不加跨进程锁 |
+| `FEATURE_PROCESS_LOCK_DIR` | `/workspace/tmp/feature-locks` | 子进程并发槽位锁文件目录 |
+
+实测 vendor 算法二进制在“不同唯一输入文件名”下 4 个子进程并行可以成功生成特征，但 vendor Python API 自身通过 `threading.Lock()` 暗示单进程内是串行设计，而且该锁不跨 gunicorn worker。因此生产默认采用 `FEATURE_PROCESS_CONCURRENCY=1` 保守排队；如果现场要提高吞吐，建议先用真实流量压测后再调到 `2` 或 `4`。
 
 ## 自动清理脚本
 

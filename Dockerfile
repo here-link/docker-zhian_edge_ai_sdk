@@ -13,6 +13,7 @@ WORKDIR /workspace
 # support from the new vendor image will be overwritten.
 COPY run.sh /workspace/run.sh
 COPY api_app.py /workspace/api_app.py
+COPY zhian_concurrency.py /workspace/zhian_concurrency.py
 COPY auto-del-3-days-ago-image.sh /workspace/apiservice/auto-del-3-days-ago-image.sh
 
 RUN test -f /workspace/doorlock_api.py \
