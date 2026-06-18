@@ -1,27 +1,65 @@
-name: Build and Test Docker Image
+name: Build Docker Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      base_image:
+        description: "Base image containing vendor BE3V120 files"
+        required: false
+        default: ""
+
+env:
+  REGISTRY: ghcr.io
+  DEFAULT_BASE_IMAGE: ghcr.io/${{ github.repository_owner }}/zhian_edge_ai_sdk-base:BE3V120
 
 jobs:
-
-  # build:
-  #
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Build the Docker image
-  #       run: docker-compose build --no-cache --force-rm
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
     steps:
-      - uses: KengoTODA/actions-setup-docker-compose@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          version: '2.14.2'
-      - uses: actions/checkout@v3
-      - name: Test the Docker image
-        run: docker-compose up -d && docker-compose logs
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image locally
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          build-args: |
+            BASE_IMAGE=${{ github.event.inputs.base_image || env.DEFAULT_BASE_IMAGE }}
+          tags: zhian-edge-ai-sdk:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test root endpoint
+        run: |
+          docker run --rm -d --name zhian-smoke -p 5000:8008 zhian-edge-ai-sdk:test
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:5000/; then
+              docker logs zhian-smoke
+              docker stop zhian-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs zhian-smoke || true
+          docker stop zhian-smoke || true
+          exit 1

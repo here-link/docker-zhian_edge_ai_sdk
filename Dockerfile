@@ -1,10 +1,23 @@
-FROM faceedge01/zhian_edge_ai_sdk:bp3V203
-MAINTAINER here.link
+ARG BASE_IMAGE=ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120
+FROM ${BASE_IMAGE}
 
-# Add the script to the Docker Image
+LABEL maintainer="here.link" \
+      org.opencontainers.image.title="zhian_edge_ai_sdk BE3V120 optimized" \
+      org.opencontainers.image.description="Optimized wrapper for Zhian BE3V120 / ZF-BP3-X face feature extraction API" \
+      org.opencontainers.image.source="https://github.com/here-link/docker-zhian_edge_ai_sdk"
+
+WORKDIR /workspace
+
+# BE3V120 already contains the new algorithm server at /workspace/doorlock_api.py.
+# Do not copy the old /workspace/apiservice/doorapiserver.py, otherwise ZF-BP3-X
+# support from the new vendor image will be overwritten.
 COPY run.sh /workspace/run.sh
-# Replace api server
-COPY doorapiserver.py /workspace/apiservice/doorapiserver.py
+COPY api_app.py /workspace/api_app.py
 
-# Add the cron job
-RUN crontab -l | { cat; echo "1 0 * * * /bin/bash /workspace/apiservice/auto-del-3-days-ago-image.sh"; } | crontab -
+RUN test -f /workspace/doorlock_api.py \
+    && chmod +x /workspace/run.sh \
+    && mkdir -p /workspace/tmp
+
+EXPOSE 8008
+
+CMD ["/bin/bash", "/workspace/run.sh"]

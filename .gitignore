@@ -196,6 +196,12 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Vendor-provided Docker image archives are large/proprietary. Load and push them
+# manually; do not commit them to this repository.
+*.tar
+*.tar.gz
+*.tgz
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

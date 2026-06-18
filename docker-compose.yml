@@ -1,7 +1,15 @@
-version: "3.3"
-
 services:
   zhian_api:
-    build: .
+    platform: linux/amd64
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/here-link/zhian_edge_ai_sdk-base:BE3V120}
+    image: ${IMAGE_NAME:-ghcr.io/here-link/docker-zhian_edge_ai_sdk:be3v120}
     ports:
-      - 5000:8008
+      - "5000:8008"
+    environment:
+      PORT: 8008
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-4}
+      GUNICORN_WORKER_CONNECTIONS: ${GUNICORN_WORKER_CONNECTIONS:-1000}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-60}
